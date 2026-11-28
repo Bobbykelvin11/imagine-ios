@@ -3,3 +3,4 @@ build/
 DerivedData/
 .DS_Store
 Imagine/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+.build/
