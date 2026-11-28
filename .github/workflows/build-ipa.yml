@@ -22,6 +22,9 @@ jobs:
           swift --version
           python3 --version
 
+      - name: Unit tests (online engine)
+        run: swift test 2>&1 | tee unit-tests.log
+
       - name: Generate AppIcon
         run: |
           python3 -m venv "$RUNNER_TEMP/icon-venv"

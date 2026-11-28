@@ -26,6 +26,13 @@
 	<string>Imagine saves the images and videos you create to your Photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Imagine lets you pick a photo to start an image or video from.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Imagine can connect to your own image or video server on your network.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
