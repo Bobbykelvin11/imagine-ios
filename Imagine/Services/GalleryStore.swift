@@ -62,6 +62,19 @@ final class GalleryStore: ObservableObject {
         return item
     }
 
+    /// Saves bytes from an online service as-is (JPEG/PNG/WebP image or MP4 video).
+    @discardableResult
+    func add(data: Data, ext: String, kind: GalleryItem.Kind, prompt: String, negative: String, seed: UInt32, model: String) -> GalleryItem? {
+        let id = UUID()
+        let safeExt = ext.isEmpty ? (kind == .video ? "mp4" : "png") : ext.lowercased()
+        let name = id.uuidString + "." + safeExt
+        do { try data.write(to: Self.dir.appending(path: name)) } catch { return nil }
+        let item = GalleryItem(id: id, kind: kind, file: name, prompt: prompt, negativePrompt: negative, seed: seed, model: model)
+        items.insert(item, at: 0)
+        save()
+        return item
+    }
+
     func delete(_ item: GalleryItem) {
         try? FileManager.default.removeItem(at: url(item))
         items.removeAll { $0.id == item.id }

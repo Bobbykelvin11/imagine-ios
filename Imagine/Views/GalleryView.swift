@@ -50,6 +50,7 @@ struct GalleryDetailView: View {
     let item: GalleryItem
     @EnvironmentObject var app: AppState
     @EnvironmentObject var gallery: GalleryStore
+    @EnvironmentObject var engine: OnlineEngine
     @Environment(\.dismiss) private var dismiss
     @State private var saved = false
 
@@ -75,14 +76,22 @@ struct GalleryDetailView: View {
                     ShareLink(item: gallery.url(item)) { Label("Share", systemImage: "square.and.arrow.up") }
                         .buttonStyle(.bordered)
                 }
-                if item.kind == .image {
+                if item.kind == .image, let img = gallery.image(item) {
+                    Button {
+                        engine.generateVideo(prompt: item.prompt, aspect: aspectOf(img), from: img, duration: 3)
+                        app.tab = .imagine; dismiss()
+                    } label: { Label("Make video (AI, free)", systemImage: "sparkles.tv") }
+                        .buttonStyle(.borderedProminent)
                     HStack {
-                        Button { app.reuse = item; app.tab = .create; dismiss() } label: { Label("Reuse prompt", systemImage: "arrow.uturn.left") }
-                        Button { app.startImage = gallery.image(item); app.tab = .create; dismiss() } label: { Label("Edit from this", systemImage: "photo") }
+                        Button { app.editImage = img; app.tab = .imagine; dismiss() } label: { Label("Edit", systemImage: "wand.and.stars") }
+                        Button { app.remixPrompt = item.prompt; app.tab = .imagine; dismiss() } label: { Label("More like this", systemImage: "arrow.triangle.2.circlepath") }
                     }
                     .buttonStyle(.bordered)
-                    Button { app.videoImage = gallery.image(item); app.tab = .video; dismiss() } label: { Label("Animate into a video", systemImage: "film") }
-                        .buttonStyle(.bordered)
+                    HStack {
+                        Button { engine.makeClip(from: [img], prompt: item.prompt, style: .kenBurns, seconds: 4); app.tab = .imagine; dismiss() } label: { Label("Zoom clip (offline)", systemImage: "film") }
+                        Button { app.videoImage = img; app.tab = .video; dismiss() } label: { Label("Video options", systemImage: "slider.horizontal.3") }
+                    }
+                    .buttonStyle(.bordered)
                 }
                 Button(role: .destructive) { gallery.delete(item); dismiss() } label: { Label("Delete", systemImage: "trash") }
                     .buttonStyle(.bordered)
@@ -97,19 +106,14 @@ struct GalleryDetailView: View {
         var parts = [item.model]
         if item.kind == .image {
             parts.append("seed \(item.seed)")
-            parts.append("\(item.steps) steps")
-            parts.append(String(format: "guidance %.1f", item.guidance))
+            if item.steps > 0 { parts.append("\(item.steps) steps") }
+            if item.guidance > 0 { parts.append(String(format: "guidance %.1f", item.guidance)) }
         }
         parts.append(item.date.formatted(date: .abbreviated, time: .shortened))
         return parts.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     private func saveToPhotos() {
-        if item.kind == .image, let img = gallery.image(item) {
-            UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-        } else {
-            UISaveVideoAtPathToSavedPhotosAlbum(gallery.url(item).path, nil, nil, nil)
-        }
-        saved = true
+        OnlineEngine.saveToPhotos(item) { ok in saved = ok }
     }
 }

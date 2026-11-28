@@ -34,6 +34,7 @@ struct CreateView: View {
     @State private var style: String?
     @State private var showAdvanced = false
     @State private var detail: GalleryItem?
+    @State private var showModels = false
 
     var body: some View {
         NavigationStack {
@@ -54,7 +55,8 @@ struct CreateView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Imagine")
+            .navigationTitle("Offline")
+            .sheet(isPresented: $showModels) { ModelsView() }
             .scrollDismissesKeyboard(.interactively)
             .sheet(item: $detail) { item in
                 NavigationStack { GalleryDetailView(item: item) }
@@ -87,7 +89,7 @@ struct CreateView: View {
             Label("Download a model to start", systemImage: "arrow.down.circle.fill").font(.headline)
             Text("Images are made fully on your iPhone, offline and without filters. Get a model once from the Models tab; Stable Diffusion 2.1 (1.1 GB) is the quickest to start with.")
                 .font(.subheadline).foregroundStyle(.secondary)
-            Button("Open Models") { app.tab = .models }.buttonStyle(.borderedProminent)
+            Button("Open Models") { showModels = true }.buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
